@@ -156,10 +156,16 @@ say "TCP retransmissions"
 if command -v tshark >/dev/null; then
   for f in baseline-loss loss-5pct failure mystery; do
     [ -s "$CAPTURES/$f.pcap" ] || continue
-    # An empty or truncated capture makes tshark exit non-zero; with pipefail
+    # Ubuntu confines tshark with AppArmor, and the profile refuses to read
+    # pcaps out of an arbitrary project directory ("You don't have permission
+    # to read the file") even when the file is owned by you and world-readable.
+    # /tmp is allowed, so analyse a copy there.
+    cp "$CAPTURES/$f.pcap" "/tmp/$f.pcap"
+    # An empty or truncated capture makes tshark exit non-zero; under pipefail
     # that would take the whole script down, so swallow it explicitly.
-    n=$(tshark -r "$CAPTURES/$f.pcap" -Y tcp.analysis.retransmission 2>/dev/null | wc -l || true)
+    n=$(tshark -r "/tmp/$f.pcap" -Y tcp.analysis.retransmission 2>/dev/null | wc -l || true)
     printf '  %-16s %s retransmissions\n' "$f.pcap" "${n:-?}" | tee -a "$LOG"
+    rm -f "/tmp/$f.pcap"
   done
 else
   echo "  open each capture in Wireshark and apply: tcp.analysis.retransmission" | tee -a "$LOG"

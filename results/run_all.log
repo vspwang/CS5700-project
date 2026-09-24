@@ -1,5 +1,5 @@
 
-[1m== server up on 127.0.0.1:5700 (pid 6195)[0m
+[1m== server up on 127.0.0.1:5700 (pid 9263)[0m
 
 [1m== Experiment 1 -- baseline[0m
 $ /home/vesper/CS5700-project/experiments/netem.sh clear
@@ -7,8 +7,8 @@ no qdisc to delete
 qdisc noqueue 0: root refcnt 2 
 $ ping -c 20 127.0.0.1
 --- 127.0.0.1 ping statistics ---
-20 packets transmitted, 20 received, 0% packet loss, time 19461ms
-rtt min/avg/max/mdev = 0.028/0.056/0.107/0.016 ms
+20 packets transmitted, 20 received, 0% packet loss, time 19486ms
+rtt min/avg/max/mdev = 0.032/0.058/0.104/0.013 ms
 $ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py ro --n 30 --port 5700 --label baseline-latency
 wrote results/baseline-latency.csv
 
@@ -17,21 +17,21 @@ wrote results/baseline-latency.csv
         n : 30
        ok : 30
    failed : 0
-  mean_ms : 0.063
-median_ms : 0.058
-   p95_ms : 0.086
-   min_ms : 0.054
-   max_ms : 0.123
+  mean_ms : 0.057
+median_ms : 0.053
+   p95_ms : 0.078
+   min_ms : 0.048
+   max_ms : 0.078
    wall_s : 0.002
-ops_per_s : 15748.3
+ops_per_s : 17319.9
 
 [1m== Experiment 1 -- netem delay 100ms[0m
 $ /home/vesper/CS5700-project/experiments/netem.sh delay 100ms
-qdisc netem 8001: root refcnt 2 limit 1000 delay 100ms seed 6346018586772470696
+qdisc netem 8004: root refcnt 2 limit 1000 delay 100ms seed 15094411391624866606
 $ ping -c 20 127.0.0.1
 --- 127.0.0.1 ping statistics ---
-20 packets transmitted, 20 received, 0% packet loss, time 19065ms
-rtt min/avg/max/mdev = 200.725/205.184/208.632/2.450 ms
+20 packets transmitted, 20 received, 0% packet loss, time 19045ms
+rtt min/avg/max/mdev = 200.892/205.591/208.951/2.354 ms
 $ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py ro --n 30 --port 5700 --label latency-100ms
 wrote results/latency-100ms.csv
 
@@ -40,12 +40,12 @@ wrote results/latency-100ms.csv
         n : 30
        ok : 30
    failed : 0
-  mean_ms : 205.585
-median_ms : 205.351
-   p95_ms : 209.322
-   min_ms : 201.719
-   max_ms : 209.396
-   wall_s : 6.168
+  mean_ms : 205.47
+median_ms : 205.594
+   p95_ms : 208.652
+   min_ms : 201.37
+   max_ms : 208.888
+   wall_s : 6.165
 ops_per_s : 4.9
 $ /home/vesper/CS5700-project/experiments/netem.sh clear
 qdisc noqueue 0: root refcnt 2 
@@ -54,7 +54,6 @@ qdisc noqueue 0: root refcnt 2
 $ /home/vesper/CS5700-project/experiments/netem.sh clear
 no qdisc to delete
 qdisc noqueue 0: root refcnt 2 
-tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 $ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py ro --n 100 --port 5700 --label baseline-loss
 wrote results/baseline-loss.csv
 
@@ -63,21 +62,22 @@ wrote results/baseline-loss.csv
         n : 100
        ok : 100
    failed : 0
-  mean_ms : 0.057
-median_ms : 0.054
-   p95_ms : 0.091
-   min_ms : 0.05
-   max_ms : 0.109
+  mean_ms : 0.064
+median_ms : 0.059
+   p95_ms : 0.105
+   min_ms : 0.052
+   max_ms : 0.142
    wall_s : 0.006
-ops_per_s : 17189.1
-0 packets captured
+ops_per_s : 15516.1
+tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+415 packets captured
 830 packets received by filter
 0 packets dropped by kernel
+  captured 415 packets into baseline-loss.pcap
 
 [1m== Experiment 2 -- netem loss 5% (100 ROs, capturing)[0m
 $ /home/vesper/CS5700-project/experiments/netem.sh loss 5%
-qdisc netem 8002: root refcnt 2 limit 1000 loss 5% seed 17118589746773856262
-tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+qdisc netem 8005: root refcnt 2 limit 1000 loss 5% seed 5402209027064866348
 $ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py ro --n 100 --port 5700 --label loss-5pct
 wrote results/loss-5pct.csv
 
@@ -86,16 +86,18 @@ wrote results/loss-5pct.csv
         n : 100
        ok : 100
    failed : 0
-  mean_ms : 31.059
-median_ms : 0.242
-   p95_ms : 217.041
-   min_ms : 0.048
-   max_ms : 650.321
-   wall_s : 3.106
-ops_per_s : 32.2
-398 packets captured
-872 packets received by filter
+  mean_ms : 20.067
+median_ms : 0.122
+   p95_ms : 211.215
+   min_ms : 0.078
+   max_ms : 287.247
+   wall_s : 2.007
+ops_per_s : 49.8
+tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+441 packets captured
+882 packets received by filter
 0 packets dropped by kernel
+  captured 441 packets into loss-5pct.pcap
 $ /home/vesper/CS5700-project/experiments/netem.sh clear
 qdisc noqueue 0: root refcnt 2 
 
@@ -108,13 +110,13 @@ wrote results/c1.csv
         n : 20
        ok : 20
    failed : 0
-  mean_ms : 0.06
-median_ms : 0.06
-   p95_ms : 0.082
+  mean_ms : 0.039
+median_ms : 0.038
+   p95_ms : 0.044
    min_ms : 0.036
-   max_ms : 0.082
+   max_ms : 0.044
    wall_s : 0.001
-ops_per_s : 16238.1
+ops_per_s : 25048.1
 $ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py concurrency --clients 3 --ops 20 --port 5700 --label c3
 wrote results/c3.csv
 
@@ -123,13 +125,13 @@ wrote results/c3.csv
         n : 60
        ok : 60
    failed : 0
-  mean_ms : 0.062
-median_ms : 0.056
-   p95_ms : 0.155
+  mean_ms : 0.039
+median_ms : 0.021
+   p95_ms : 0.082
    min_ms : 0.014
-   max_ms : 0.206
+   max_ms : 0.124
    wall_s : 0.004
-ops_per_s : 16549.9
+ops_per_s : 13728.6
 $ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py concurrency --clients 5 --ops 20 --port 5700 --label c5
 wrote results/c5.csv
 
@@ -138,16 +140,15 @@ wrote results/c5.csv
         n : 100
        ok : 100
    failed : 0
-  mean_ms : 0.057
-median_ms : 0.046
-   p95_ms : 0.148
+  mean_ms : 0.033
+median_ms : 0.026
+   p95_ms : 0.088
    min_ms : 0.013
-   max_ms : 0.232
-   wall_s : 0.005
-ops_per_s : 22198.0
+   max_ms : 0.184
+   wall_s : 0.004
+ops_per_s : 23552.9
 
 [1m== Part 6 -- Network Mystery (framing bug), capturing[0m
-tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 $ /home/vesper/CS5700-project/.venv/bin/python mystery/buggy_client.py --port 5700 --n 4
 pipelined 4 VOTE requests; waiting 0.05s for the replies
   recv() returned 364 bytes (header says 87)
@@ -162,20 +163,21 @@ pipelined 4 VOTE requests; waiting 0.05s for the replies
   reply 3: VOTE_ACK id=m-0003
 
 OK: all 4 replies parsed (read_frame respects the length prefix)
-0 packets captured
+tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+76 packets captured
 152 packets received by filter
 0 packets dropped by kernel
+  captured 76 packets into mystery.pcap
 
 [1m== Experiment 4 -- server failure, BEFORE (no timeout, no retry), capturing[0m
-tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 $ /home/vesper/CS5700-project/.venv/bin/python experiments/exp_failure.py --mode baseline --failure kill --port 5701 --n 20 --fail-after 5 --downtime 3
 op   0  OK        0.1 ms  
 op   1  OK        0.1 ms  
 op   2  OK        0.1 ms  
 op   3  OK        0.1 ms  
 op   4  OK        0.1 ms  
-[02:54:10] server terminated (SIGTERM)
-op   5  FAIL       0.2 ms  ConnectionResetError
+[03:21:51] server terminated (SIGTERM)
+op   5  FAIL       0.5 ms  ConnectionResetError
 op   6  FAIL       0.0 ms  BrokenPipeError
 op   7  FAIL       0.0 ms  BrokenPipeError
 op   8  FAIL       0.0 ms  BrokenPipeError
@@ -190,17 +192,19 @@ op  16  FAIL       0.0 ms  BrokenPipeError
 op  17  FAIL       0.0 ms  BrokenPipeError
 op  18  FAIL       0.0 ms  BrokenPipeError
 op  19  FAIL       0.0 ms  BrokenPipeError
-[02:54:13] server restarted
+[03:21:54] server restarted
 
 --- failure-baseline-kill ---
 completed operations      : 5/20
 completed after the fault : 0/15
-failure detection time    : 0.2 ms
+failure detection time    : 0.5 ms
 client reconnects         : 0
 wrote results/failure-baseline-kill.csv
-65 packets captured
-146 packets received by filter
+tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+74 packets captured
+148 packets received by filter
 0 packets dropped by kernel
+  captured 74 packets into failure.pcap
 
 [1m== Part 7 -- same workload, AFTER (timeout + backoff reconnect)[0m
 $ /home/vesper/CS5700-project/.venv/bin/python experiments/exp_failure.py --mode resilient --failure kill --port 5701 --n 20 --fail-after 5 --downtime 3
@@ -209,23 +213,23 @@ op   1  OK        0.1 ms
 op   2  OK        0.1 ms  
 op   3  OK        0.1 ms  
 op   4  OK        0.1 ms  
-[02:54:13] server terminated (SIGTERM)
-[02:54:16] server restarted
-op   5  OK     3331.8 ms  
-op   6  OK        0.4 ms  
-op   7  OK        0.5 ms  
-op   8  OK        0.3 ms  
+[03:21:55] server terminated (SIGTERM)
+[03:21:58] server restarted
+op   5  OK     3293.4 ms  
+op   6  OK        0.6 ms  
+op   7  OK        0.3 ms  
+op   8  OK        0.4 ms  
 op   9  OK        0.2 ms  
 op  10  OK        0.3 ms  
-op  11  OK        0.2 ms  
+op  11  OK        0.3 ms  
 op  12  OK        0.2 ms  
-op  13  OK        0.1 ms  
-op  14  OK        0.1 ms  
-op  15  OK        0.1 ms  
-op  16  OK        0.1 ms  
-op  17  OK        0.1 ms  
-op  18  OK        0.1 ms  
-op  19  OK        0.1 ms  
+op  13  OK        0.3 ms  
+op  14  OK        0.3 ms  
+op  15  OK        0.3 ms  
+op  16  OK        0.2 ms  
+op  17  OK        0.3 ms  
+op  18  OK        0.5 ms  
+op  19  OK        0.3 ms  
 
 --- failure-resilient-kill ---
 completed operations      : 20/20
@@ -240,14 +244,14 @@ op   0  OK        0.1 ms
 op   1  OK        0.1 ms  
 op   2  OK        0.1 ms  
 op   3  OK        0.1 ms  
-[02:54:17] server frozen (SIGSTOP)
-[02:54:25] server resumed (SIGCONT)
-op   4  OK     8002.7 ms  
-op   5  OK        0.4 ms  
-op   6  OK        0.2 ms  
-op   7  OK        0.2 ms  
-op   8  OK        0.2 ms  
-op   9  OK        0.2 ms  
+[03:21:58] server frozen (SIGSTOP)
+[03:22:06] server resumed (SIGCONT)
+op   4  OK     8004.8 ms  
+op   5  OK        0.6 ms  
+op   6  OK        0.3 ms  
+op   7  OK        0.5 ms  
+op   8  OK        0.3 ms  
+op   9  OK        0.3 ms  
 
 --- failure-resilient-freeze ---
 completed operations      : 10/10
@@ -257,3 +261,47 @@ client reconnects         : 3
 wrote results/failure-resilient-freeze.csv
 
 [1m== TCP retransmissions[0m
+  baseline-loss.pcap 1 retransmissions
+  loss-5pct.pcap   16 retransmissions
+  failure.pcap     0 retransmissions
+  mystery.pcap     0 retransmissions
+
+[1m== figures[0m
+$ /home/vesper/CS5700-project/.venv/bin/python experiments/plot.py
+wrote results/fig1_conditions.png
+wrote results/fig2_loss_cdf.png
+wrote results/fig3_concurrency.png
+
+[1m== done[0m
+$ /home/vesper/CS5700-project/experiments/netem.sh show
+qdisc noqueue 0: root refcnt 2 
+/home/vesper/CS5700-project/captures:
+total 196
+drwxrwxr-x  2 vesper vesper  4096 Sep 24 02:54 .
+drwxrwxr-x 11 vesper vesper  4096 Sep 24 02:53 ..
+-rw-rw-r--  1 vesper vesper    47 Sep 24 02:52 .gitkeep
+-rw-r--r--  1 vesper vesper 78120 Sep 24 03:21 baseline-loss.pcap
+-rw-r--r--  1 vesper vesper 11468 Sep 24 03:21 failure.pcap
+-rw-r--r--  1 vesper vesper 81488 Sep 24 03:21 loss-5pct.pcap
+-rw-r--r--  1 vesper vesper  9840 Sep 24 03:21 mystery.pcap
+
+/home/vesper/CS5700-project/results:
+total 208
+drwxrwxr-x  2 vesper vesper  4096 Sep 24 03:22 .
+drwxrwxr-x 11 vesper vesper  4096 Sep 24 02:53 ..
+-rw-rw-r--  1 vesper vesper    29 Sep 24 02:52 .gitkeep
+-rw-rw-r--  1 vesper vesper   820 Sep 24 03:21 baseline-latency.csv
+-rw-rw-r--  1 vesper vesper  2703 Sep 24 03:21 baseline-loss.csv
+-rw-rw-r--  1 vesper vesper   544 Sep 24 03:21 c1.csv
+-rw-rw-r--  1 vesper vesper  1558 Sep 24 03:21 c3.csv
+-rw-rw-r--  1 vesper vesper  2576 Sep 24 03:21 c5.csv
+-rw-rw-r--  1 vesper vesper   753 Sep 24 03:21 failure-baseline-kill.csv
+-rw-rw-r--  1 vesper vesper   276 Sep 24 03:22 failure-resilient-freeze.csv
+-rw-rw-r--  1 vesper vesper   524 Sep 24 03:21 failure-resilient-kill.csv
+-rw-rw-r--  1 vesper vesper 52502 Sep 24 03:22 fig1_conditions.png
+-rw-rw-r--  1 vesper vesper 37999 Sep 24 03:22 fig2_loss_cdf.png
+-rw-rw-r--  1 vesper vesper 51718 Sep 24 03:22 fig3_concurrency.png
+-rw-rw-r--  1 vesper vesper   885 Sep 24 03:21 latency-100ms.csv
+-rw-rw-r--  1 vesper vesper  2720 Sep 24 03:21 loss-5pct.csv
+-rw-rw-r--  1 vesper vesper  9078 Sep 24 03:22 run_all.log
+-rw-rw-r--  1 vesper vesper     0 Sep 24 03:20 server.log

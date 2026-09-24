@@ -1,13 +1,13 @@
 iter,voter_id,elapsed_ms,ok,err
-0,fail-000000,0.071,1,
+0,fail-000000,0.076,1,
 1,fail-000001,0.095,1,
-2,fail-000002,0.09,1,
-3,fail-000003,0.061,1,
-4,fail-000004,0.06,1,
-5,fail-000005,0.195,0,ConnectionResetError
-6,fail-000006,0.012,0,BrokenPipeError
+2,fail-000002,0.099,1,
+3,fail-000003,0.101,1,
+4,fail-000004,0.114,1,
+5,fail-000005,0.482,0,ConnectionResetError
+6,fail-000006,0.015,0,BrokenPipeError
 7,fail-000007,0.006,0,BrokenPipeError
-8,fail-000008,0.005,0,BrokenPipeError
+8,fail-000008,0.004,0,BrokenPipeError
 9,fail-000009,0.004,0,BrokenPipeError
 10,fail-000010,0.004,0,BrokenPipeError
 11,fail-000011,0.004,0,BrokenPipeError
@@ -18,4 +18,4 @@ iter,voter_id,elapsed_ms,ok,err
 16,fail-000016,0.004,0,BrokenPipeError
 17,fail-000017,0.004,0,BrokenPipeError
 18,fail-000018,0.004,0,BrokenPipeError
-19,fail-000019,0.004,0,BrokenPipeError
+19,fail-000019,0.003,0,BrokenPipeError

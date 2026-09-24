@@ -61,14 +61,29 @@ start_server() {
 }
 
 cap_start() {  # $1 = filename, $2 = port
-  sudo tcpdump -i lo -s 0 "port $2" -w "$CAPTURES/$1" >>"$LOG" 2>&1 &
-  sleep 0.8                      # let tcpdump attach before traffic starts
+  # -U writes every packet straight to the file.  Without it tcpdump buffers,
+  # and a workload that finishes in milliseconds is still sitting in the buffer
+  # when we stop the capture -- which yields a 24-byte, header-only pcap.
+  local stderr="/tmp/tcpdump-$1.err"
+  : > "$stderr"
+  sudo tcpdump -i lo -s 0 -U "port $2" -w "$CAPTURES/$1" 2>"$stderr" &
+  for _ in $(seq 1 100); do      # wait for the filter to be attached, not a guess
+    grep -q "listening on" "$stderr" && { sleep 0.3; return 0; }
+    sleep 0.1
+  done
+  echo "WARNING: tcpdump never started for $1" | tee -a "$LOG"
 }
 
 cap_stop() {   # $1 = filename
+  sleep 0.5                      # let the last packets of the workload arrive
   sudo pkill -INT -f "tcpdump -i lo" 2>/dev/null || true
-  sleep 0.5                      # let it flush the buffer
+  sleep 0.5
   sudo chown "$(id -un):$(id -gn)" "$CAPTURES/$1" 2>/dev/null || true
+  cat "/tmp/tcpdump-$1.err" >> "$LOG" 2>/dev/null || true
+  local n
+  n=$(tcpdump -r "$CAPTURES/$1" 2>/dev/null | wc -l | tr -d ' ')
+  printf '  captured %s packets into %s\n' "$n" "$1" | tee -a "$LOG"
+  [ "$n" -gt 0 ] || echo "  WARNING: $1 is empty" | tee -a "$LOG"
 }
 
 netem() { run "$ROOT/experiments/netem.sh" "$@"; }
@@ -140,9 +155,11 @@ run "$PY" experiments/exp_failure.py --mode resilient --failure freeze \
 say "TCP retransmissions"
 if command -v tshark >/dev/null; then
   for f in baseline-loss loss-5pct failure mystery; do
-    [ -f "$CAPTURES/$f.pcap" ] || continue
-    n=$(tshark -r "$CAPTURES/$f.pcap" -Y tcp.analysis.retransmission 2>/dev/null | wc -l)
-    printf '  %-16s %s retransmissions\n' "$f.pcap" "$n" | tee -a "$LOG"
+    [ -s "$CAPTURES/$f.pcap" ] || continue
+    # An empty or truncated capture makes tshark exit non-zero; with pipefail
+    # that would take the whole script down, so swallow it explicitly.
+    n=$(tshark -r "$CAPTURES/$f.pcap" -Y tcp.analysis.retransmission 2>/dev/null | wc -l || true)
+    printf '  %-16s %s retransmissions\n' "$f.pcap" "${n:-?}" | tee -a "$LOG"
   done
 else
   echo "  open each capture in Wireshark and apply: tcp.analysis.retransmission" | tee -a "$LOG"

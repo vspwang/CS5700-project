@@ -1,0 +1,259 @@
+
+[1m== server up on 127.0.0.1:5700 (pid 6195)[0m
+
+[1m== Experiment 1 -- baseline[0m
+$ /home/vesper/CS5700-project/experiments/netem.sh clear
+no qdisc to delete
+qdisc noqueue 0: root refcnt 2 
+$ ping -c 20 127.0.0.1
+--- 127.0.0.1 ping statistics ---
+20 packets transmitted, 20 received, 0% packet loss, time 19461ms
+rtt min/avg/max/mdev = 0.028/0.056/0.107/0.016 ms
+$ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py ro --n 30 --port 5700 --label baseline-latency
+wrote results/baseline-latency.csv
+
+--- baseline-latency ---
+    label : baseline-latency
+        n : 30
+       ok : 30
+   failed : 0
+  mean_ms : 0.063
+median_ms : 0.058
+   p95_ms : 0.086
+   min_ms : 0.054
+   max_ms : 0.123
+   wall_s : 0.002
+ops_per_s : 15748.3
+
+[1m== Experiment 1 -- netem delay 100ms[0m
+$ /home/vesper/CS5700-project/experiments/netem.sh delay 100ms
+qdisc netem 8001: root refcnt 2 limit 1000 delay 100ms seed 6346018586772470696
+$ ping -c 20 127.0.0.1
+--- 127.0.0.1 ping statistics ---
+20 packets transmitted, 20 received, 0% packet loss, time 19065ms
+rtt min/avg/max/mdev = 200.725/205.184/208.632/2.450 ms
+$ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py ro --n 30 --port 5700 --label latency-100ms
+wrote results/latency-100ms.csv
+
+--- latency-100ms ---
+    label : latency-100ms
+        n : 30
+       ok : 30
+   failed : 0
+  mean_ms : 205.585
+median_ms : 205.351
+   p95_ms : 209.322
+   min_ms : 201.719
+   max_ms : 209.396
+   wall_s : 6.168
+ops_per_s : 4.9
+$ /home/vesper/CS5700-project/experiments/netem.sh clear
+qdisc noqueue 0: root refcnt 2 
+
+[1m== Experiment 2 -- baseline (100 ROs, capturing)[0m
+$ /home/vesper/CS5700-project/experiments/netem.sh clear
+no qdisc to delete
+qdisc noqueue 0: root refcnt 2 
+tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+$ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py ro --n 100 --port 5700 --label baseline-loss
+wrote results/baseline-loss.csv
+
+--- baseline-loss ---
+    label : baseline-loss
+        n : 100
+       ok : 100
+   failed : 0
+  mean_ms : 0.057
+median_ms : 0.054
+   p95_ms : 0.091
+   min_ms : 0.05
+   max_ms : 0.109
+   wall_s : 0.006
+ops_per_s : 17189.1
+0 packets captured
+830 packets received by filter
+0 packets dropped by kernel
+
+[1m== Experiment 2 -- netem loss 5% (100 ROs, capturing)[0m
+$ /home/vesper/CS5700-project/experiments/netem.sh loss 5%
+qdisc netem 8002: root refcnt 2 limit 1000 loss 5% seed 17118589746773856262
+tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+$ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py ro --n 100 --port 5700 --label loss-5pct
+wrote results/loss-5pct.csv
+
+--- loss-5pct ---
+    label : loss-5pct
+        n : 100
+       ok : 100
+   failed : 0
+  mean_ms : 31.059
+median_ms : 0.242
+   p95_ms : 217.041
+   min_ms : 0.048
+   max_ms : 650.321
+   wall_s : 3.106
+ops_per_s : 32.2
+398 packets captured
+872 packets received by filter
+0 packets dropped by kernel
+$ /home/vesper/CS5700-project/experiments/netem.sh clear
+qdisc noqueue 0: root refcnt 2 
+
+[1m== Experiment 3 -- 1, 3, 5 concurrent clients x 20 ROs[0m
+$ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py concurrency --clients 1 --ops 20 --port 5700 --label c1
+wrote results/c1.csv
+
+--- c1 ---
+    label : c1
+        n : 20
+       ok : 20
+   failed : 0
+  mean_ms : 0.06
+median_ms : 0.06
+   p95_ms : 0.082
+   min_ms : 0.036
+   max_ms : 0.082
+   wall_s : 0.001
+ops_per_s : 16238.1
+$ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py concurrency --clients 3 --ops 20 --port 5700 --label c3
+wrote results/c3.csv
+
+--- c3 ---
+    label : c3
+        n : 60
+       ok : 60
+   failed : 0
+  mean_ms : 0.062
+median_ms : 0.056
+   p95_ms : 0.155
+   min_ms : 0.014
+   max_ms : 0.206
+   wall_s : 0.004
+ops_per_s : 16549.9
+$ /home/vesper/CS5700-project/.venv/bin/python experiments/bench.py concurrency --clients 5 --ops 20 --port 5700 --label c5
+wrote results/c5.csv
+
+--- c5 ---
+    label : c5
+        n : 100
+       ok : 100
+   failed : 0
+  mean_ms : 0.057
+median_ms : 0.046
+   p95_ms : 0.148
+   min_ms : 0.013
+   max_ms : 0.232
+   wall_s : 0.005
+ops_per_s : 22198.0
+
+[1m== Part 6 -- Network Mystery (framing bug), capturing[0m
+tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+$ /home/vesper/CS5700-project/.venv/bin/python mystery/buggy_client.py --port 5700 --n 4
+pipelined 4 VOTE requests; waiting 0.05s for the replies
+  recv() returned 364 bytes (header says 87)
+
+FAILED: JSONDecodeError: Extra data: line 1 column 88 (char 87)
+The bytes arrived intact -- check Wireshark. The client, not the network, lost the message boundary.
+$ /home/vesper/CS5700-project/.venv/bin/python mystery/buggy_client.py --port 5700 --n 4 --fixed
+pipelined 4 VOTE requests; waiting 0.05s for the replies
+  reply 0: VOTE_ACK id=m-0000
+  reply 1: VOTE_ACK id=m-0001
+  reply 2: VOTE_ACK id=m-0002
+  reply 3: VOTE_ACK id=m-0003
+
+OK: all 4 replies parsed (read_frame respects the length prefix)
+0 packets captured
+152 packets received by filter
+0 packets dropped by kernel
+
+[1m== Experiment 4 -- server failure, BEFORE (no timeout, no retry), capturing[0m
+tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+$ /home/vesper/CS5700-project/.venv/bin/python experiments/exp_failure.py --mode baseline --failure kill --port 5701 --n 20 --fail-after 5 --downtime 3
+op   0  OK        0.1 ms  
+op   1  OK        0.1 ms  
+op   2  OK        0.1 ms  
+op   3  OK        0.1 ms  
+op   4  OK        0.1 ms  
+[02:54:10] server terminated (SIGTERM)
+op   5  FAIL       0.2 ms  ConnectionResetError
+op   6  FAIL       0.0 ms  BrokenPipeError
+op   7  FAIL       0.0 ms  BrokenPipeError
+op   8  FAIL       0.0 ms  BrokenPipeError
+op   9  FAIL       0.0 ms  BrokenPipeError
+op  10  FAIL       0.0 ms  BrokenPipeError
+op  11  FAIL       0.0 ms  BrokenPipeError
+op  12  FAIL       0.0 ms  BrokenPipeError
+op  13  FAIL       0.0 ms  BrokenPipeError
+op  14  FAIL       0.0 ms  BrokenPipeError
+op  15  FAIL       0.0 ms  BrokenPipeError
+op  16  FAIL       0.0 ms  BrokenPipeError
+op  17  FAIL       0.0 ms  BrokenPipeError
+op  18  FAIL       0.0 ms  BrokenPipeError
+op  19  FAIL       0.0 ms  BrokenPipeError
+[02:54:13] server restarted
+
+--- failure-baseline-kill ---
+completed operations      : 5/20
+completed after the fault : 0/15
+failure detection time    : 0.2 ms
+client reconnects         : 0
+wrote results/failure-baseline-kill.csv
+65 packets captured
+146 packets received by filter
+0 packets dropped by kernel
+
+[1m== Part 7 -- same workload, AFTER (timeout + backoff reconnect)[0m
+$ /home/vesper/CS5700-project/.venv/bin/python experiments/exp_failure.py --mode resilient --failure kill --port 5701 --n 20 --fail-after 5 --downtime 3
+op   0  OK        0.1 ms  
+op   1  OK        0.1 ms  
+op   2  OK        0.1 ms  
+op   3  OK        0.1 ms  
+op   4  OK        0.1 ms  
+[02:54:13] server terminated (SIGTERM)
+[02:54:16] server restarted
+op   5  OK     3331.8 ms  
+op   6  OK        0.4 ms  
+op   7  OK        0.5 ms  
+op   8  OK        0.3 ms  
+op   9  OK        0.2 ms  
+op  10  OK        0.3 ms  
+op  11  OK        0.2 ms  
+op  12  OK        0.2 ms  
+op  13  OK        0.1 ms  
+op  14  OK        0.1 ms  
+op  15  OK        0.1 ms  
+op  16  OK        0.1 ms  
+op  17  OK        0.1 ms  
+op  18  OK        0.1 ms  
+op  19  OK        0.1 ms  
+
+--- failure-resilient-kill ---
+completed operations      : 20/20
+completed after the fault : 15/15
+failure detection time    : n/a (no operation ever failed)
+client reconnects         : 5
+wrote results/failure-resilient-kill.csv
+
+[1m== Part 7 -- frozen server (SIGSTOP): only a timeout can detect this[0m
+$ /home/vesper/CS5700-project/.venv/bin/python experiments/exp_failure.py --mode resilient --failure freeze --port 5701 --n 10 --fail-after 4 --downtime 8 --timeout 2
+op   0  OK        0.1 ms  
+op   1  OK        0.1 ms  
+op   2  OK        0.1 ms  
+op   3  OK        0.1 ms  
+[02:54:17] server frozen (SIGSTOP)
+[02:54:25] server resumed (SIGCONT)
+op   4  OK     8002.7 ms  
+op   5  OK        0.4 ms  
+op   6  OK        0.2 ms  
+op   7  OK        0.2 ms  
+op   8  OK        0.2 ms  
+op   9  OK        0.2 ms  
+
+--- failure-resilient-freeze ---
+completed operations      : 10/10
+completed after the fault : 6/6
+failure detection time    : n/a (no operation ever failed)
+client reconnects         : 3
+wrote results/failure-resilient-freeze.csv
+
+[1m== TCP retransmissions[0m
